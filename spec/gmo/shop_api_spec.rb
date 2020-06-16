@@ -98,6 +98,25 @@ describe "GMO::Payment::ShopAPI" do
     end
   end
 
+  describe "#entry_tran_rakutenpay" do
+    it "gets data about a transaction", :vcr do
+      order_id = @order_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => 'CAPTURE',
+        :amount => 100
+      })
+      result["AccessID"].nil?.should_not be_truthy
+      result["AccessPass"].nil?.should_not be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.entry_tran_rakutenpay()
+      }.should raise_error("Required order_id, job_cd, amount were not provided.")
+    end
+  end
+
   describe "#entry_tran_linepay" do
     it "gets data about a transaction", :vcr do
       order_id = @order_id
@@ -317,6 +336,39 @@ describe "GMO::Payment::ShopAPI" do
     end
   end
 
+  describe "#exec_tran_rakutenpay" do
+    it "gets data about a transaction", :vcr do
+      order_id = generate_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => 'CAPTURE',
+        :amount => 100
+      })
+      access_id = result["AccessID"]
+      access_pass = result["AccessPass"]
+      result = @service.exec_tran_rakutenpay({
+        :order_id      => order_id,
+        :access_id     => access_id,
+        :access_pass   => access_pass,
+        :item_id       => 'item_id',
+        :item_sub_id   => 'sub_id',
+        :item_name     => 'item_name',
+        :ret_url       => 'https://example.com/path/to/return/success',
+        :error_rcv_url => 'https://example.com/path/to/return/failure',
+      })
+      result["Start"].nil?.should_not be_truthy
+      result["AccessID"].nil?.should_not be_truthy
+      result["Token"].nil?.should_not be_truthy
+      result["StartURL"].nil?.should_not be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.exec_tran_rakutenpay()
+      }.should raise_error("Required access_id, access_pass, order_id, item_id, item_sub_id, item_name, ret_url, error_rcv_url were not provided.")
+    end
+  end
+
   describe "#exec_tran_linepay" do
     it "gets data about a transaction", :vcr do
       order_id = generate_id
@@ -416,6 +468,133 @@ describe "GMO::Payment::ShopAPI" do
         result["ClientField2"].nil?.should_not be true
         result["ClientField3"].nil?.should_not be true
       end
+    end
+  end
+
+  describe "#rakutenpay_start" do
+    it "gets data about order", :vcr do
+      order_id = generate_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => "CAPTURE",
+        :amount => 100
+      })
+      result = @service.exec_tran_rakutenpay({
+        :order_id      => order_id,
+        :access_id     => result["AccessID"],
+        :access_pass   => result["AccessPass"],
+        :item_id       => 'item_id',
+        :item_sub_id   => 'sub_id',
+        :item_name     => 'item_name',
+        :ret_url       => 'https://example.com/path/to/return/success',
+        :error_rcv_url => 'https://example.com/path/to/return/failure',
+      })
+
+      result = @service.rakutenpay_start({
+        :access_id     => result["AccessID"],
+        :token         => result["Token"],
+      })
+      result["ShopID"].nil?.should_not be_truthy
+      result["OrderID"].nil?.should_not be_truthy
+      result["c"].nil?.should_not be_truthy
+      result["ErrCode"].nil?.should be_truthy
+      result["ErrInfo"].nil?.should be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.rakutenpay_start()
+      }.should raise_error("Required access_id, token were not provided.")
+    end
+  end
+
+  describe "#rakutenpay_change" do
+    it "gets data about order", :vcr do
+      order_id = generate_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => "CAPTURE",
+        :amount => 100
+      })
+
+      result = @service.rakutenpay_change({
+        :access_id     => result["AccessID"],
+        :access_pass   => result["AccessPass"],
+        :order_id      => result["OrderID"],
+        :amount        => 100,
+        :tax           => 100,
+      })
+      result["OrderID"].nil?.should_not be_truthy
+      result["Status"].nil?.should_not be_truthy
+      result["Amount"].nil?.should_not be_truthy
+      result["Tax"].nil?.should_not be_truthy
+      result["ErrCode"].nil?.should be_truthy
+      result["ErrInfo"].nil?.should be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.rakutenpay_change()
+      }.should raise_error("Required access_id, access_pass, order_id, amount, tax were not provided.")
+    end
+  end
+
+
+  describe "#rakutenpay_sales" do
+    it "gets data about order", :vcr do
+      order_id = generate_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => "CAPTURE",
+        :amount => 100
+      })
+
+      result = @service.rakutenpay_sales({
+        :access_id     => result["AccessID"],
+        :access_pass   => result["AccessPass"],
+        :order_id      => result["OrderID"],
+      })
+      result["OrderID"].nil?.should_not be_truthy
+      result["Status"].nil?.should_not be_truthy
+      result["Amount"].nil?.should_not be_truthy
+      result["Tax"].nil?.should_not be_truthy
+      result["ErrCode"].nil?.should be_truthy
+      result["ErrInfo"].nil?.should be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.rakutenpay_sales()
+      }.should raise_error("Required access_id, access_pass, order_id were not provided.")
+    end
+  end
+
+  describe "#rakutenpay_cancel" do
+    it "gets data about order", :vcr do
+      order_id = generate_id
+      result = @service.entry_tran_rakutenpay({
+        :order_id => order_id,
+        :job_cd => "CAPTURE",
+        :amount => 100
+      })
+
+      result = @service.rakutenpay_cancel({
+        :access_id     => result["AccessID"],
+        :access_pass   => result["AccessPass"],
+        :order_id      => result["OrderID"],
+      })
+      result["OrderID"].nil?.should_not be_truthy
+      result["Status"].nil?.should_not be_truthy
+      result["Amount"].nil?.should_not be_truthy
+      result["Tax"].nil?.should_not be_truthy
+      result["ErrCode"].nil?.should be_truthy
+      result["ErrInfo"].nil?.should be_truthy
+    end
+
+    it "got error if missing options", :vcr do
+      lambda {
+        result = @service.rakutenpay_cancel()
+      }.should raise_error("Required access_id, access_pass, order_id were not provided.")
     end
   end
 

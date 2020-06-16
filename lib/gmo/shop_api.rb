@@ -73,6 +73,16 @@ module GMO
         post_request name, options
       end
 
+      # 【楽天Pay決済】
+      #  18.1.2.1. 取引登録
+      #  これ以降の決済取引で必要となる取引IDと取引パスワードの発行を行い、取引を開始します。
+      def entry_tran_rakutenpay(options = {})
+        name = "EntryTranRakutenId.idPass"
+        required = [:order_id, :job_cd, :amount]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
       # 【LINE Pay決済】
       #  20.1.2.1. 取引登録
       #  これ以降の決済取引で必要となる取引IDと取引パスワードの発行を行い、取引を開始します。
@@ -201,6 +211,15 @@ module GMO
         post_request name, options
       end
 
+      # 【楽天Pay決済】
+      # 18.1.2.2. 決済実行
+      def exec_tran_rakutenpay(options = {})
+        name = "ExecTranRakutenId.idPass"
+        required = [:access_id, :access_pass, :order_id, :item_id, :item_sub_id, :item_name, :ret_url, :error_rcv_url]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
       # 【LINE Pay決済】
       # 20.1.2.2. 決済実行
       def exec_tran_linepay(options = {})
@@ -249,6 +268,46 @@ module GMO
       def exec_tran_brandtoken(options = {})
         name = "ExecTranBrandtoken.idPass"
         options[:token_type] = GMO::Const::TOKEN_TYPES_MAP[options[:token_type]]
+        required = [:access_id, :access_pass, :order_id]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
+      # 【楽天Pay決済】
+      # 18.1.2.3. 支払手続き開始IFの呼出し
+      def rakutenpay_start(options = {})
+        name = "RakutenIdStart.idPass"
+        print options
+        required = [:access_id, :token]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
+      # 【楽天Pay決済】
+      # 18.1.2.3. 支払手続き開始IFの呼出し
+      def rakutenpay_cancel(options = {})
+        name = "RakutenIdCancel.idPass"
+        print options
+        required = [:access_id, :access_pass, :order_id]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
+      # 【楽天Pay決済】
+      # 18.3.2.1. 決済金額変更
+      def rakutenpay_change(options = {})
+        name = "RakutenIdChange.idPass"
+        print options
+        required = [:access_id, :access_pass, :order_id, :amount, :tax]
+        assert_required_options(required, options)
+        post_request name, options
+      end
+
+      # 【楽天Pay決済】
+      # 18.4.2.1. 実売上
+      def rakutenpay_sales(options = {})
+        name = "RakutenIdSales.idPass"
+        print options
         required = [:access_id, :access_pass, :order_id]
         assert_required_options(required, options)
         post_request name, options

@@ -67,6 +67,8 @@ module GMO
       :http_ua               => "HttpUserAgent",
       :inquiry_data          => "InquiryData",
       :inquiry_id            => "InquiryID",
+      :item_id               => "ItemId",
+      :item_sub_id           => "ItemSubId",
       :item_code             => "ItemCode",
       :item_name             => "ItemName",
       :job_cd                => "JobCd",
